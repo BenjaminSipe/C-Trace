@@ -8,6 +8,7 @@ router.route("/contact").get((req, res) => {
     res.send("contact post")
 })
 
+// This is a comment...
 router.get("/contact/all", (req, res) => {
     res.send("Contact get all")
 });
