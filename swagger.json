@@ -55,6 +55,11 @@
         ]
       }
     },
+    "/case/by/name/:name": {
+      "get": {
+        "tags": ["Case"]
+      }
+    },
     "/case": {
       "get": {
         "tags": ["Case"]

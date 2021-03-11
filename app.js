@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
-const expressOasGenerator = require('express-oas-generator');
+// const expressOasGenerator = require('express-oas-generator');
 
 
 
