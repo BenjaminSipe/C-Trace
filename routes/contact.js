@@ -1,6 +1,6 @@
 var express = require("express");
 var router = express.Router();
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectID } = require("mongodb");
 
 const url = "mongodb://127.0.0.1:27017/";
 var client;
@@ -21,24 +21,28 @@ router.get("/by/name/:name", async (req, res) => {
     if (person) {
       res.send(person);
     } else {
-      res.send({ err: "No Active Case under name " + req.params.name });
+      res.send({ err: "No Active Contact under name " + req.params.name });
     }
   } else {
     res.send({ err: "Could not find Parameter Name" });
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next) => {
   var query;
   var collection = await getCollection();
   if (req.params.id) {
-    query = { _id: req.params.id, doc: { $exists: true } };
-    const person = await collection.findOne(query);
-    await client.close();
-    if (person) {
-      res.send(person);
+    if (req.params.id == "all") {
+      next();
     } else {
-      res.send({ err: "No Active Case under ID " + req.params.id });
+      query = { _id: ObjectID(req.params.id), doc: { $exists: true } };
+      const person = await collection.findOne(query);
+      await client.close();
+      if (person) {
+        res.send(person);
+      } else {
+        res.send({ err: "No Active Contact under ID " + req.params.id });
+      }
     }
   } else {
     res.send({ err: "Could not find Parameter ID" });
