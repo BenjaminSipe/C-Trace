@@ -113,6 +113,35 @@
           }
         }
       }
+    },
+    "/case/{id}": {
+      "get": {
+        "tags": ["Case"],
+        "summary": "Get a single case by id",
+        "description": "Get a single covid positive contact form response based on form id.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "GUID of close contact form.",
+            "required": true,
+            "type": "string",
+            "default": "6064d62617f3056f1aa38321"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "schema": {
+              "$ref": "#/definitions/CaseSuccess"
+            }
+          },
+          "400": {
+            "description": "Could not find case with id"
+          }
+        }
+      }
     }
   },
   "definitions": {
