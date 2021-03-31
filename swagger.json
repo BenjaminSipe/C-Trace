@@ -1,262 +1,396 @@
 {
   "swagger": "2.0",
   "info": {
-    "description": "This is a C-Trace API Swagger doc. This documentation",
+    "description": "This is a Express.JS API server for C-Trace.",
     "version": "1.0.0",
     "title": "Swagger C-Trace",
+    "termsOfService": "Product may not be used currently.",
     "contact": {
       "email": "c.trace.contact@gmail.com"
-    },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     }
   },
   "host": "localhost:3000",
   "basePath": "/api",
   "tags": [
     {
-      "name": "Authentication",
-      "description": "Token authentication for C-Trace"
+      "name": "Contact",
+      "description": "All information related to saving and loading Close Contact tracing forms."
     },
     {
       "name": "Case",
-      "description": "Information for Positive or Probable COVID Cases"
-    },
-    {
-      "name": "Contact",
-      "description": "Information for Close Contacts of Positive or Probable COVID Cases"
-    },
-    {
-      "name": "Messaging",
-      "description": "Service for sending messaging services via email or SMS"
+      "description": "All informaiton related to saving and loading Positive Case contact tracing errors."
     }
   ],
-  "schemes": ["https"],
+  "schemes": ["http"],
   "paths": {
-    "/auth": {
-      "get": {
-        "tags": ["Authentication"],
-        "summary": "Check if the user is authenticated",
-        "description": "",
-        "operationId": "checkAuth",
+    "/case": {
+      "post": {
+        "tags": ["Case"],
+        "summary": "Save C-Trace positive case contact form to MongoDB",
+        "description": "Saves positive case contact form along with information pertaining to close contacts associated with case.",
         "consumes": ["application/json"],
         "produces": ["application/json"],
-        "parameters": [],
-        "responses": {
-          "405": {
-            "description": "Invalid input"
-          }
-        },
-        "security": [
+        "parameters": [
           {
-            "auth": ["write:auth", "read:auth"]
+            "name": "body",
+            "in": "body",
+            "description": "covid positive case contact form data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CaseForm"
+            }
           }
-        ]
-      }
-    },
-    "/case/by/name/:name": {
-      "get": {
-        "tags": ["Case"]
-      }
-    },
-    "/case": {
-      "get": {
-        "tags": ["Case"]
-      },
-      "post": {
-        "tags": ["Case"]
-      }
-    },
-    "/case/all": {
-      "get": {
-        "tags": ["Case"]
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "$ref": "#/definitions/CaseFormSuccess"
+            }
+          },
+          "400": {
+            "description": "Invalid Form Data"
+          }
+        }
       }
     },
     "/contact": {
-      "get": {
-        "tags": ["Contact"]
-      },
       "post": {
-        "tags": ["Contact"]
-      }
-    },
-    "/contact/all": {
-      "get": {
-        "tags": ["Contact"]
-      }
-    },
-    "/messaging/contact": {
-      "get": {
-        "tags": ["Contact", "Messaging"]
-      }
-    },
-    "/messaging/case": {
-      "get": {
-        "tags": ["Case", "Messaging"]
-      }
-    },
-    "/messaging/contact/all": {
-      "get": {
-        "tags": ["Contact", "Messaging"]
-      }
-    },
-    "/messaging/case/all": {
-      "get": {
-        "tags": ["Case", "Messaging"]
-      }
-    },
-    "/pet": {
-      "post": {
-        "tags": ["all"],
-        "summary": "Add a new pet to the store",
+        "tags": ["Contact"],
+        "summary": "Save C-Trace close contact form to MongoDB",
         "description": "",
-        "operationId": "addPet",
-        "consumes": ["application/json", "application/xml"],
-        "produces": ["application/xml", "application/json"],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
         "parameters": [
           {
-            "in": "body",
             "name": "body",
-            "description": "Pet object that needs to be added to the store",
+            "in": "body",
+            "description": "close contact form data",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Order"
+              "$ref": "#/definitions/ContactForm"
             }
           }
         ],
         "responses": {
-          "405": {
-            "description": "Invalid input"
-          }
-        },
-        "security": [
-          {
-            "petstore_auth": ["write:pets", "read:pets"]
-          }
-        ]
-      },
-      "put": {
-        "tags": ["all"],
-        "summary": "Update an existing pet",
-        "description": "",
-        "operationId": "updatePet",
-        "consumes": ["application/json", "application/xml"],
-        "produces": ["application/xml", "application/json"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "description": "Pet object that needs to be added to the store",
-            "required": true,
+          "200": {
+            "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/Pet"
+              "$ref": "#/definitions/ContactFormSuccess"
             }
-          }
-        ],
-        "responses": {
+          },
           "400": {
-            "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Pet not found"
-          },
-          "405": {
-            "description": "Validation exception"
+            "description": "Invalid Form Data"
           }
-        },
-        "security": [
-          {
-            "petstore_auth": ["write:pets", "read:pets"]
-          }
-        ]
-      }
-    }
-  },
-  "securityDefinitions": {
-    "petstore_auth": {
-      "type": "oauth2",
-      "authorizationUrl": "http://petstore.swagger.io/oauth/dialog",
-      "flow": "implicit",
-      "scopes": {
-        "write:pets": "modify pets in your account",
-        "read:pets": "read your pets"
+        }
       }
     },
-    "api_key": {
-      "type": "apiKey",
-      "name": "api_key",
-      "in": "header"
+    "/contact/{id}": {
+      "get": {
+        "tags": ["Contact"],
+        "summary": "Get a single contact by id",
+        "description": "Get a single close contact form response based on form id.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "GUID of close contact form.",
+            "required": true,
+            "type": "string",
+            "default": "6064d62617f3056f1aa38321"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation",
+            "schema": {
+              "$ref": "#/definitions/ContactSuccess"
+            }
+          },
+          "400": {
+            "description": "Could not find contact with id"
+          }
+        }
+      }
     }
   },
   "definitions": {
-    "Order": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "petId": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "quantity": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "shipDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Order Status",
-          "enum": ["placed", "approved", "delivered"]
-        },
-        "complete": {
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "xml": {
-        "name": "Order"
-      }
-    },
-    "CaseForm": {},
     "ContactForm": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
+          "description": "Full Name",
           "default": "John Doe"
         },
-        "Address": {
+        "address": {
           "type": "string",
-          "default": "100 Opportunity Ave. Point Lookout Mo. 65726"
+          "description": "Current Home Address",
+          "default": "100 Opportunity Ave. Point Lookout MO 65726"
         },
-        "DOB": {
-          "type": "string",
-          "format": "date",
-          "default": "2000-02-24"
-        },
-        "DOCC": {
+        "dob": {
+          "description": "Date of Birth",
           "type": "string",
           "format": "date",
-          "default": "2021-02-24"
+          "default": "1/1/2000"
         },
-        "Where To Quarantine": {
+        "quarantineLocation": {
           "type": "string",
           "default": "On Campus"
+        },
+        "email": {
+          "type": "string",
+          "default": "example@email.com"
+        },
+        "phone": {
+          "type": "string",
+          "default": "(000) 000-0000"
+        },
+        "doc": {
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
         }
-      },
-      "json": {
-        "name": "ContactForm"
+      }
+    },
+    "CaseForm": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full Name",
+          "default": "John Doe"
+        },
+        "address": {
+          "type": "string",
+          "description": "Current Home Address",
+          "default": "100 Opportunity Ave. Point Lookout MO 65726"
+        },
+        "dob": {
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "quarantineLocation": {
+          "type": "string",
+          "default": "On Campus"
+        },
+        "email": {
+          "type": "string",
+          "default": "example@email.com"
+        },
+        "phone": {
+          "type": "string",
+          "default": "(000) 000-0000"
+        },
+        "symptoms": {
+          "description": "List of all symptoms from a set list along with potential others.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "default": "Coughing"
+          }
+        },
+        "dot": {
+          "description": "Date of Test",
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "doso": {
+          "description": "Date of Symptom Onset",
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "doc": {
+                "type": "string",
+                "description": "Date of Contact",
+                "default": "1/1/2000",
+                "required": true
+              },
+              "name": {
+                "type": "string",
+                "description": "Full name of close contact",
+                "default": "Jane Doe",
+                "required": true
+              },
+              "email": {
+                "type": "string",
+                "description": "Email of Close contact, must contain either email or phone",
+                "default": "example@email.com",
+                "required": false
+              },
+              "phone": {
+                "type": "string",
+                "description": "Phone number of close contact, must contain either email or phone",
+                "default": "(000) 000-0000",
+                "required": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "ContactFormSuccess": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Auto Assigned ID by MongoDB",
+          "default": "6064d62617f3056f1aa38321"
+        }
+      }
+    },
+    "CaseFormSuccess": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Auto Assigned ID by MongoDB",
+          "default": "6064d62617f3056f1aa38321"
+        }
+      }
+    },
+    "ContactSuccess": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Auto Assigned ID by MongoDB",
+          "default": "6064d62617f3056f1aa38321"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full Name",
+          "default": "John Doe"
+        },
+        "address": {
+          "type": "string",
+          "description": "Current Home Address",
+          "default": "100 Opportunity Ave. Point Lookout MO 65726"
+        },
+        "dob": {
+          "description": "Date of Birth",
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "quarantineLocation": {
+          "type": "string",
+          "default": "Campus"
+        },
+        "email": {
+          "type": "string",
+          "default": "example@email.com"
+        },
+        "phone": {
+          "type": "string",
+          "default": "(000) 000-0000"
+        },
+        "doc": {
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        }
+      }
+    },
+    "CaseSuccess": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Auto Assigned ID by MongoDB",
+          "default": "6064d62617f3056f1aa38321"
+        },
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full Name",
+            "default": "John Doe"
+          },
+          "address": {
+            "type": "string",
+            "description": "Current Home Address",
+            "default": "100 Opportunity Ave. Point Lookout MO 65726"
+          },
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "default": "1/1/2000"
+          },
+          "quarantineLocation": {
+            "type": "string",
+            "default": "On Campus"
+          },
+          "email": {
+            "type": "string",
+            "default": "example@email.com"
+          },
+          "phone": {
+            "type": "string",
+            "default": "(000) 000-0000"
+          },
+          "symptoms": {
+            "description": "List of all symptoms from a set list along with potential others.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "default": "Coughing"
+            }
+          },
+          "dot": {
+            "description": "Date of Test",
+            "type": "string",
+            "format": "date",
+            "default": "1/1/2000"
+          },
+          "doso": {
+            "description": "Date of Symptom Onset",
+            "type": "string",
+            "format": "date",
+            "default": "1/1/2000"
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "doc": {
+                  "type": "string",
+                  "description": "Date of Contact",
+                  "default": "1/1/2000",
+                  "required": true
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Full name of close contact",
+                  "default": "Jane Doe",
+                  "required": true
+                },
+                "email": {
+                  "type": "string",
+                  "description": "Email of Close contact, must contain either email or phone",
+                  "default": "example@email.com",
+                  "required": false
+                },
+                "phone": {
+                  "type": "string",
+                  "description": "Phone number of close contact, must contain either email or phone",
+                  "default": "(000) 000-0000",
+                  "required": false
+                }
+              }
+            }
+          }
+        }
       }
     }
-  },
-  "externalDocs": {
-    "description": "Find out more about C-Trace",
-    "url": "localhost:3000"
   }
 }
