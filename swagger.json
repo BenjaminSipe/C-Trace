@@ -338,83 +338,82 @@
           "description": "Auto Assigned ID by MongoDB",
           "default": "6064d62617f3056f1aa38321"
         },
-        "properties": {
-          "name": {
+
+        "name": {
+          "type": "string",
+          "description": "Full Name",
+          "default": "John Doe"
+        },
+        "address": {
+          "type": "string",
+          "description": "Current Home Address",
+          "default": "100 Opportunity Ave. Point Lookout MO 65726"
+        },
+        "dob": {
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "quarantineLocation": {
+          "type": "string",
+          "default": "On Campus"
+        },
+        "email": {
+          "type": "string",
+          "default": "example@email.com"
+        },
+        "phone": {
+          "type": "string",
+          "default": "(000) 000-0000"
+        },
+        "symptoms": {
+          "description": "List of all symptoms from a set list along with potential others.",
+          "type": "array",
+          "items": {
             "type": "string",
-            "description": "Full Name",
-            "default": "John Doe"
-          },
-          "address": {
-            "type": "string",
-            "description": "Current Home Address",
-            "default": "100 Opportunity Ave. Point Lookout MO 65726"
-          },
-          "dob": {
-            "type": "string",
-            "format": "date",
-            "default": "1/1/2000"
-          },
-          "quarantineLocation": {
-            "type": "string",
-            "default": "On Campus"
-          },
-          "email": {
-            "type": "string",
-            "default": "example@email.com"
-          },
-          "phone": {
-            "type": "string",
-            "default": "(000) 000-0000"
-          },
-          "symptoms": {
-            "description": "List of all symptoms from a set list along with potential others.",
-            "type": "array",
-            "items": {
-              "type": "string",
-              "default": "Coughing"
-            }
-          },
-          "dot": {
-            "description": "Date of Test",
-            "type": "string",
-            "format": "date",
-            "default": "1/1/2000"
-          },
-          "doso": {
-            "description": "Date of Symptom Onset",
-            "type": "string",
-            "format": "date",
-            "default": "1/1/2000"
-          },
-          "contacts": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "doc": {
-                  "type": "string",
-                  "description": "Date of Contact",
-                  "default": "1/1/2000",
-                  "required": true
-                },
-                "name": {
-                  "type": "string",
-                  "description": "Full name of close contact",
-                  "default": "Jane Doe",
-                  "required": true
-                },
-                "email": {
-                  "type": "string",
-                  "description": "Email of Close contact, must contain either email or phone",
-                  "default": "example@email.com",
-                  "required": false
-                },
-                "phone": {
-                  "type": "string",
-                  "description": "Phone number of close contact, must contain either email or phone",
-                  "default": "(000) 000-0000",
-                  "required": false
-                }
+            "default": "Coughing"
+          }
+        },
+        "dot": {
+          "description": "Date of Test",
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "doso": {
+          "description": "Date of Symptom Onset",
+          "type": "string",
+          "format": "date",
+          "default": "1/1/2000"
+        },
+        "contacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "doc": {
+                "type": "string",
+                "description": "Date of Contact",
+                "default": "1/1/2000",
+                "required": true
+              },
+              "name": {
+                "type": "string",
+                "description": "Full name of close contact",
+                "default": "Jane Doe",
+                "required": true
+              },
+              "email": {
+                "type": "string",
+                "description": "Email of Close contact, must contain either email or phone",
+                "default": "example@email.com",
+                "required": false
+              },
+              "phone": {
+                "type": "string",
+                "description": "Phone number of close contact, must contain either email or phone",
+                "default": "(000) 000-0000",
+                "required": false
               }
             }
           }
