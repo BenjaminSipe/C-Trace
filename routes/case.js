@@ -50,14 +50,29 @@ router.get("/:id", async (req, res, next) => {
 });
 
 router.post("/", async (req, res) => {
+  // console.log(req.body);
+  // res.send("test");
   var collection = await getCollection();
-  const response = await collection.insertOne(req.body);
-  await client.close();
-  if (response) {
-    res.send({ _id: response.ops[0]["_id"] });
-  } else {
-    res.send({ err: "Ooof" });
-  }
+
+  var promises = req.body.contacts.map(async (item) => {
+    let entry = { name: item.name };
+    entry[item.type.toLowerCase()] = item.info;
+    const response = await collection.insertOne(entry);
+    item["_id"] = response.ops[0]["_id"];
+    return new Promise((res, rej) => {
+      res(response);
+    });
+  });
+
+  Promise.all(promises).then(async (results) => {
+    const response = await collection.insertOne(req.body);
+    await client.close();
+    if (response) {
+      res.send({ _id: response.ops[0]["_id"] });
+    } else {
+      res.send({ err: "Ooof" });
+    }
+  });
 });
 
 router.get("/all", async (req, res) => {
