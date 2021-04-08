@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
     let entry = { name: item.name };
     entry[item.type.toLowerCase()] = item.info;
     const response = await collection.insertOne(entry);
-    item["_id"] = response.ops[0]["_id"];
+    item = { _id: response.ops[0]["_id"] };
     return new Promise((res, rej) => {
       res(response);
     });
