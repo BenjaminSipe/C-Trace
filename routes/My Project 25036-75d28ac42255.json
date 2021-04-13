@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "deductive-cider-310601",
+  "private_key_id": "75d28ac4225528c01e8d36ea846c3a62a62a52da",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCvdV/oMjsqSPNC\njNOIjnf76ZewVbYUMe8EmUOtcz4Q+vq2m0ot3L1QDXzVuWo5Gp7aimQT8Mpv3o/4\nbYs1gLwzrK/wBxs2qiGWfrUlE2rRIkQ8KspxuFO9aAb3ctAF191ci3tejQQwmESy\nVPY+wiOFD+K/ofAbe02yVnO1qJnS8lcoQ0FUeZEx9nNgfntGXTpW+h7f3cWb6jLk\nlSZlPvhn4771X+o+nQkie1fL5+DnPtldWTk1M9u15zJRWiG4Th0KyXtv8epZJSOr\nkyg9PWrTxmDjI6eOmzsdVS5kM/0rm3jG4NScfFgHSRHZ1cbGtzX/lg5vRKKKqTYi\nfShzjQQJAgMBAAECggEAMqtkzPtklquGhJuCoxbxk3A7/BJkiKR68AsKvlZfgCva\np01lOKVcjne2q0nmYSNM6LO6fv+0lmXhkc6guwy4TPv7uwdyVnD/TiS9Tz2yRT7u\nEaoR2JFwrWwTRvaDGIzkQkuNjxqOMTJn9FAQ5MLP2ydhRhIP8v/CylOpCrbr5TzX\n7JVDcXeNumN8JvwGtQgx3YWXShFXXbNP7fB3b9KgJq8mP7Ox8X43HYee83FK1kIK\n0W2yPWwVDi8qsm3i3iqTOIKhtGcc1v0HR8Rz47iA4Uok8B5Aey0iS1mFlEIWWGYs\nGSrFpUaH1VNZH/l+4Jj5+sMFt8kmE9WpLV6Pw6JGmQKBgQDppp7oNvRLOkurZu3K\np5mSY492HwtDOqNE8HwLR302ARid3vOF1LLWNuiSswr6G9ikFW30SAxKMbN7U1zk\n1RrDmb32sJ8FGdmWAlvOWl6kDoaRliaRGiCpQAqbgwuNyl1XnGajgicObSELuj3b\nOPKA0tJ9fq/cPdvSaah4jNuG/wKBgQDAPc4CSxBcvyM2bMDZE6WdihSlyDL8q9ou\nulXLK+eUVw7pKHfk+rLsBLjvT+KGVKA4wDcvBo1/JN18X9S/2Vxli+kM6rSQ7Cnz\nQqLIO2GmQYQBskj2Z73+CrAyw57x5xe1PAXTt1hGfjjRTHA/0mBHuRmWXc7wmODM\nug09MeY89wKBgDgiOLEvarecFMvkGaMDawjZdID7alhHgSwx3otTLIjJ8KEVDEqN\n1D1UycFc1HlMMVsSbu0uVg2JLUamu32amSh/Cj13J20xTa4VePr1iSE/ACOAAFoB\n/fDLmwDLlf4FrTE8OQh1X26+1x6bKvs9Dj3W6I0P3645ClPd4IS9yov/AoGBAK2I\nXOk3B0shgtDDNQX/NTXTijXoVRY+rxIVRBLFzCLcv2n7DNdW8qIY1TO5Ydsukv8H\njAjYGmxWQ9Tc0Lhppn1H4ZS2XU6g0HF1imnDKK+iXl4FqNU86oVi8pCwg08L8xu3\nVe86huYDVJiiLoV+C0lTLmTMw1vuNKa5n+/IlnQbAn80tEcRs/gMO3aRADdlFfOD\nIFKGlWIY2YSZtZXTZqErrECwPwWHW9e0OO51dBc0jYqfadKbEJTQgXiO5M8wjPXC\nHBKpiYCNLMYs4SjIntUGbVLuXoO/Q8U8ssZzyritRiie/QsxpkiAO8kSgCdCYzpO\nqhxv+9dtIxuYt2eZi8Sv\n-----END PRIVATE KEY-----\n",
+  "client_email": "testaccount@deductive-cider-310601.iam.gserviceaccount.com",
+  "client_id": "105343140376941589715",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/testaccount%40deductive-cider-310601.iam.gserviceaccount.com"
+}
