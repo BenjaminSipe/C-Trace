@@ -66,7 +66,7 @@ async function sendEmail(emailData, res) {
 }
 
 var accountSid = "AC94d60ab4b4bf3a1976fbdcbf36736be2"; // Your Account SID from www.twilio.com/console
-var authToken = "732ad7ab0ea061fd192a45d4725d56d1"; // Your Auth Token from www.twilio.com/console
+var authToken = "525b07ad6210f8f9b6cd9dd4c6366053"; // Your Auth Token from www.twilio.com/console
 
 router.post("/contact/:id", function (req, res, next) {
   if (req.params.id) {
