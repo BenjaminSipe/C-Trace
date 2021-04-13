@@ -4,6 +4,7 @@ var router = express.Router();
 const { ObjectID } = require("mongodb");
 var twilio = require("twilio");
 const nodemailer = require("nodemailer");
+const fs = require("fs");
 
 function contactEmailTemplate(data) {
   return {
@@ -76,6 +77,9 @@ router.post("/contact/:id", function (req, res, next) {
         if (person) {
           //   if (false) {
           if (person.phone) {
+            let rawdata = fs.readFileSync("./tokens.json");
+            let { accountSid, authToken } = JSON.parse(rawdata);
+            console.log(accountSid);
             var client = new twilio(accountSid, authToken);
             client.messages
               .create({
@@ -133,6 +137,9 @@ router.post("/case/:id", function (req, res, next) {
           //   if (false) {
           // avoiding sending texts for now.
           if (person.phone) {
+            let rawdata = fs.readFileSync("../tokens.json");
+            let { accountSid, authToken } = JSON.parse(rawdata);
+            console.log(accountSid);
             var client = new twilio(accountSid, authToken);
             client.messages
               .create({
