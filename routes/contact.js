@@ -6,7 +6,11 @@ var getCollection = require("../connectors");
 router.get("/by/name/:name", async (req, res) => {
   await getCollection(async (collection) => {
     if (req.params.name) {
-      const query = { name: req.params.name, doc: { $exists: true } };
+      const query = {
+        name: req.params.name,
+        doso: { $exists: false },
+        dot: { $exists: false },
+      };
       const person = await collection.findOne(query);
       if (person) {
         res.send(person);
@@ -25,7 +29,11 @@ router.get("/:id", async (req, res, next) => {
       if (req.params.id == "all") {
         next();
       } else {
-        var query = { _id: ObjectID(req.params.id), doc: { $exists: true } };
+        var query = {
+          _id: ObjectID(req.params.id),
+          doso: { $exists: false },
+          dot: { $exists: false },
+        };
         const person = await collection.findOne(query);
         if (person) {
           res.send(person);
@@ -52,7 +60,7 @@ router.post("/", async (req, res) => {
 
 router.get("/all", async (req, res) => {
   await getCollection(async (collection) => {
-    const query = { doc: { $exists: true } };
+    const query = { doso: { $exists: false }, dot: { $exists: false } };
     var arr = [];
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));

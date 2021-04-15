@@ -6,7 +6,10 @@ var getCollection = require("../connectors");
 router.get("/by/name/:name", async (req, res) => {
   getCollection(async (collection) => {
     if (req.params.name) {
-      const query = { name: req.params.name, doc: { $exists: false } };
+      const query = {
+        name: req.params.name,
+        $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+      };
       const person = await collection.findOne(query);
       if (person) {
         res.send(person);
@@ -25,7 +28,10 @@ router.get("/:id", async (req, res, next) => {
       next();
     } else {
       await getCollection(async (collection) => {
-        query = { _id: ObjectID(req.params.id), doc: { $exists: false } };
+        query = {
+          _id: ObjectID(req.params.id),
+          $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+        };
         const person = await collection.findOne(query);
         if (person) {
           res.send(person);
@@ -42,7 +48,7 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", async (req, res) => {
   getCollection(async (collection) => {
     var promises = req.body.contacts.map(async (item) => {
-      let entry = { name: item.name };
+      let entry = { name: item.name, doc: item.doc };
       entry[item.type.toLowerCase()] = item.info;
       const response = await collection.insertOne(entry);
       item = { _id: response.ops[0]["_id"] };
@@ -65,7 +71,9 @@ router.post("/", async (req, res) => {
 router.get("/all", async (req, res) => {
   getCollection(async (collection) => {
     var arr = [];
-    const query = { doc: { $exists: false } };
+    const query = {
+      $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+    };
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));
     res.send(arr);
