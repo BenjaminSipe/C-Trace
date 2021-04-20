@@ -126,19 +126,14 @@ router.post("/contact/:id", function (req, res, next) {
 });
 
 router.post("/case", function (req, res, next) {
-  // if (req.params.id) {
-  // if (req.params.id == "all") {
-  //   next();
-  // } else {
   getCollection(async (collection) => {
     const filter = { name: req.body.name };
     filter[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
     const query = { $set: { status: "Positive" } };
     var response = await collection.updateOne(filter, query);
-    // console.log(response.modifiedCount);
     if (response.modifiedCount !== 1) {
       const entry = { ...filter, status: "Positive" };
-      entry[req.body.dType] = req.body.date;
+      entry[req.body.dType] = new Date(req.body.date);
       const response = await collection.insertOne(entry);
     }
 

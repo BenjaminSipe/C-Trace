@@ -66,17 +66,32 @@ router.post("/", async (req, res) => {
   const collection = (await client.connect())
     .db(dbName)
     .collection(collectionName);
-  var query = { ...req.body, status: "Positive" };
-  query.contacts = [];
-  var promises = req.body.contacts.map(async (item) => {
-    let entry = { name: item.name, doc: new Date(item.doc), status: "Exposed" };
-    entry[item.type.toLowerCase()] = item.info;
-    const response = await collection.insertOne(entry);
-    query.contacts.push({ _id: response.ops[0]["_id"] });
-    return new Promise((res, rej) => {
-      res(response);
+  var query = { ...req.body, status: "Positive", contacts: [] };
+  var promises = req.body.contacts
+    .filter(async (item) => {
+      let filter = {
+        name: item.name,
+        status: "Recovered",
+        immunityEnd: { $gte: {} },
+      };
+      filter[item.type.toLowerCase()] = item.info;
+      filter.immunityEnd["$gte"] = new Date();
+      return await collection.find(filter);
+    })
+    .map(async (item) => {
+      let entry = {
+        name: item.name,
+        doc: new Date(item.doc),
+        status: "Exposed",
+      };
+
+      entry[item.type.toLowerCase()] = item.info;
+      const response = await collection.insertOne(entry);
+      query.contacts.push({ _id: response.ops[0]["_id"] });
+      return new Promise((res, rej) => {
+        res(response);
+      });
     });
-  });
   Promise.all(promises)
     .then(async (result) => {
       let { dot, doso, dob } = query;
@@ -104,7 +119,7 @@ router.get("/all", async (req, res) => {
   getCollection(async (collection) => {
     var arr = [];
     const query = {
-      status: "Postive",
+      status: "Positive",
     };
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));
