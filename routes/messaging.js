@@ -5,6 +5,7 @@ const { ObjectID } = require("mongodb");
 var twilio = require("twilio");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
+const { request } = require("express");
 
 function contactEmailTemplate(data) {
   return {
@@ -19,7 +20,7 @@ function contactEmailTemplate(data) {
       data.doc +
       ".\n" +
       "Please follow this link to fill out a Covid Contact Form:" +
-      "http://172.25.21.187:8080/contact" +
+      "http://172.25.22.175:8080/contact" +
       (data.params ? "?" + data.params : "") +
       "\nIf you believe this email was sent in error, " +
       "please contact your local health authority for verification." +
@@ -39,7 +40,7 @@ function caseEmailTemplate(data) {
       "tested positive for COVID19 or are developing symptoms " +
       "after a known COVID19 exposure.\n" +
       "Please follow this link to fill out a Covid Postivite Case Form:" +
-      "http://172.25.21.187:8080/case" +
+      "http://172.25.22.175:8080/case" +
       (data.params ? "?" + data.params : "") +
       "\nIf you believe this email was sent in error, " +
       "please contact your local health authority for verification." +
@@ -124,56 +125,72 @@ router.post("/contact/:id", function (req, res, next) {
   }
 });
 
-router.post("/case/:id", function (req, res, next) {
-  if (req.params.id) {
-    if (req.params.id == "all") {
-      next();
-    } else {
-      getCollection(async (collection) => {
-        const query = { _id: ObjectID(req.params.id), doc: { $exists: false } };
-        const person = await collection.findOne(query);
+router.post("/case", function (req, res, next) {
+  const query = { name: req.body.name };
+  query[req.body.type.toLowerCase()] = req.body.info;
 
-        if (person) {
-          //   if (false) {
-          // avoiding sending texts for now.
-          if (person.phone) {
-            let rawdata = fs.readFileSync("../tokens.json");
-            let { accountSid, authToken } = JSON.parse(rawdata);
-            console.log(accountSid);
-            var client = new twilio(accountSid, authToken);
-            client.messages
-              .create({
-                body:
-                  "Please click this link to fill out COVID form http://172.25.21.187:8080/case",
-                to: "+13145612361", // Text this number
-                from: "+14055823794", // From a valid Twilio number
-              })
-              .then((message) => res.send(message.sid));
-            // Do Twilio Code
-          } else {
-            if (person.email) {
-              let emailData = caseEmailTemplate({
-                to: '"' + person.name + '" <' + person.email + ">",
-                name: person.name,
-              });
+  // if (req.params.id) {
+  // if (req.params.id == "all") {
+  //   next();
+  // } else {
+  getCollection(async (collection) => {
+    const filter = { name: req.body.name };
+    filter[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
+    const query = { $set: { status: "Positive" } };
 
-              sendEmail(emailData, res);
-            } else {
-              res
-                .status(400)
-                .send({ err: "No Contact Info found for id ${id}" });
-            }
-          }
-        } else {
-          res
-            .status(400)
-            .send({ err: "No Active Contact under id " + req.params.id });
-        }
-      });
+    // const query = { _id: ObjectID(req.params.id), doc: { $exists: false } };
+    var response = await collection.updateOne(filter, query);
+    console.log(response.modifiedCount);
+    if (response.modifiedCount !== 1) {
+      const entry = { ...filter, status: "Positive" };
+      entry[req.body.dType] = req.body.date;
+      const response = await collection.insertOne(entry);
+      console.log(response);
     }
-  } else {
-    res.status(400).send({ err: "Could not find Parameter id" });
-  }
+    // if (person) {
+    //   // if (person.status !== "Recovered" || new Date(person.recoverDate).getTime() > new Date().getTime()) {
+    //   // }
+    // }
+    // if (person) {
+    // if (false) {
+    // avoiding sending texts for now.
+    console.log(req.body);
+    if (req.body.type === "phone") {
+      let rawdata = fs.readFileSync("../tokens.json");
+      let { accountSid, authToken } = JSON.parse(rawdata);
+      console.log(accountSid);
+      var client = new twilio(accountSid, authToken);
+      client.messages
+        .create({
+          body:
+            "Please click this link to fill out COVID form http://localhost:8080/case",
+          to:
+            "+1" +
+            req.body.info
+              .split("")
+              .filter((letter) => "1234567890".split("").includes(letter))
+              .join(""), // Text this number
+          from: "+14055823794", // From a valid Twilio number
+        })
+        .then((message) => res.send(message.sid));
+      // Do Twilio Code
+    } else {
+      if (req.body.type === "Email") {
+        let emailData = caseEmailTemplate({
+          to: '"' + req.body.name + '" <' + req.body.info + ">",
+          name: req.body.name,
+        });
+
+        sendEmail(emailData, res);
+      } else {
+        res.status(400).send({ err: "No Contact Info found for id ${id}" });
+      }
+    }
+  });
+  // }
+  // } else {
+  //   res.status(400).send({ err: "Could not find Parameter id" });
+  // }
 });
 
 router.post("/case/all", (req, res, next) => {

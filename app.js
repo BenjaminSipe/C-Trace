@@ -14,7 +14,7 @@ var caseRouter = require("./routes/case");
 var contactRouter = require("./routes/contact");
 
 var app = express();
-app.use(cors());
+// app.use(cors());
 // view engine setup
 
 // app.set("views", path.join(__dirname, "views"));

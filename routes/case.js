@@ -1,9 +1,22 @@
 var express = require("express");
 var router = express.Router();
-const { ObjectID } = require("mongodb");
+const { ObjectID, MongoClient } = require("mongodb");
 var getCollection = require("../connectors");
 
-router.get("/by/name/:name", async (req, res) => {
+router.get("/recovered/all", (req, res) => {
+  getCollection(async (collection) => {
+    let x = new Date();
+    x.setDate(x.getDate() - 14);
+    const query = {
+      $or: [{ doso: { $lte: x } }, { dot: { $lte: x } }],
+    };
+    let arr = [];
+    const cursor = await collection.find(query);
+    await cursor.forEach((elem) => arr.push(elem));
+    res.send(arr);
+  });
+});
+router.get("/by/name/:name", (req, res) => {
   getCollection(async (collection) => {
     if (req.params.name) {
       const query = {
@@ -46,26 +59,46 @@ router.get("/:id", async (req, res, next) => {
 });
 
 router.post("/", async (req, res) => {
-  getCollection(async (collection) => {
-    var promises = req.body.contacts.map(async (item) => {
-      let entry = { name: item.name, doc: item.doc };
-      entry[item.type.toLowerCase()] = item.info;
-      const response = await collection.insertOne(entry);
-      item = { _id: response.ops[0]["_id"] };
-      return new Promise((res, rej) => {
-        res(response);
-      });
+  const url = "mongodb://127.0.0.1:27017/";
+  const dbName = "test";
+  const collectionName = "Student";
+  let client = new MongoClient(url, { useUnifiedTopology: true });
+  const collection = (await client.connect())
+    .db(dbName)
+    .collection(collectionName);
+  var query = { ...req.body };
+  query.contacts = [];
+  var promises = req.body.contacts.map(async (item) => {
+    let entry = { name: item.name, doc: new Date(item.doc) };
+    entry[item.type.toLowerCase()] = item.info;
+    const response = await collection.insertOne(entry);
+    query.contacts.push({ _id: response.ops[0]["_id"] });
+    return new Promise((res, rej) => {
+      res(response);
     });
-
-    Promise.all(promises).then(async (results) => {
-      const response = await collection.insertOne(req.body);
-      if (response) {
-        res.send({ _id: response.ops[0]["_id"] });
+  });
+  console.log(collection);
+  Promise.all(promises)
+    .then(async (result) => {
+      let { dot, doso, dob } = query;
+      if (dot) {
+        query.dot = new Date(dot);
+      }
+      if (doso) {
+        query.doso = new Date(doso);
+      }
+      if (dob) {
+        query.dob = new Date(dob);
+      }
+      const response2 = await collection.insertOne(query);
+      if (response2) {
+        res.send({ _id: response2.ops[0]["_id"] });
+        // resolve("worked properly");
       } else {
         res.send({ err: "Ooof" });
       }
-    });
-  });
+    })
+    .then((res) => client.close());
 });
 
 router.get("/all", async (req, res) => {

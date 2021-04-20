@@ -49,7 +49,15 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", async (req, res) => {
   getCollection(async (collection) => {
-    collection.insertOne(req.body);
+    let { doc, dob } = req.body;
+    let query = { ...req.body };
+    if (doc) {
+      query.doc = new Date(doc);
+    }
+    if (dob) {
+      query.dob = new Date(dob);
+    }
+    var response = await collection.insertOne(query);
     if (response) {
       res.send({ _id: response.ops[0]["_id"] });
     } else {
