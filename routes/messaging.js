@@ -73,7 +73,7 @@ router.post("/contact/:id", function (req, res, next) {
       next();
     } else {
       getCollection(async (collection) => {
-        const query = { _id: ObjectID(req.params.id), doc: { $exists: true } };
+        const query = { _id: ObjectID(req.params.id), status: "Exposed" };
         const person = await collection.findOne(query);
         if (person) {
           //   if (false) {
@@ -126,9 +126,6 @@ router.post("/contact/:id", function (req, res, next) {
 });
 
 router.post("/case", function (req, res, next) {
-  const query = { name: req.body.name };
-  query[req.body.type.toLowerCase()] = req.body.info;
-
   // if (req.params.id) {
   // if (req.params.id == "all") {
   //   next();
@@ -137,24 +134,14 @@ router.post("/case", function (req, res, next) {
     const filter = { name: req.body.name };
     filter[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
     const query = { $set: { status: "Positive" } };
-
-    // const query = { _id: ObjectID(req.params.id), doc: { $exists: false } };
     var response = await collection.updateOne(filter, query);
-    console.log(response.modifiedCount);
+    // console.log(response.modifiedCount);
     if (response.modifiedCount !== 1) {
       const entry = { ...filter, status: "Positive" };
       entry[req.body.dType] = req.body.date;
       const response = await collection.insertOne(entry);
-      console.log(response);
     }
-    // if (person) {
-    //   // if (person.status !== "Recovered" || new Date(person.recoverDate).getTime() > new Date().getTime()) {
-    //   // }
-    // }
-    // if (person) {
-    // if (false) {
-    // avoiding sending texts for now.
-    console.log(req.body);
+
     if (req.body.type === "phone") {
       let rawdata = fs.readFileSync("../tokens.json");
       let { accountSid, authToken } = JSON.parse(rawdata);
@@ -183,14 +170,12 @@ router.post("/case", function (req, res, next) {
 
         sendEmail(emailData, res);
       } else {
-        res.status(400).send({ err: "No Contact Info found for id ${id}" });
+        res
+          .status(400)
+          .send({ err: "No Contact Info found for " + req.body.name });
       }
     }
   });
-  // }
-  // } else {
-  //   res.status(400).send({ err: "Could not find Parameter id" });
-  // }
 });
 
 router.post("/case/all", (req, res, next) => {

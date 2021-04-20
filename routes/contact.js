@@ -8,8 +8,7 @@ router.get("/by/name/:name", async (req, res) => {
     if (req.params.name) {
       const query = {
         name: req.params.name,
-        doso: { $exists: false },
-        dot: { $exists: false },
+        status: "Exposed",
       };
       const person = await collection.findOne(query);
       if (person) {
@@ -31,8 +30,7 @@ router.get("/:id", async (req, res, next) => {
       } else {
         var query = {
           _id: ObjectID(req.params.id),
-          doso: { $exists: false },
-          dot: { $exists: false },
+          status: "Exposed",
         };
         const person = await collection.findOne(query);
         if (person) {
@@ -50,7 +48,7 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", async (req, res) => {
   getCollection(async (collection) => {
     let { doc, dob } = req.body;
-    let query = { ...req.body };
+    let query = { ...req.body, status: "Exposed" };
     if (doc) {
       query.doc = new Date(doc);
     }
@@ -68,7 +66,7 @@ router.post("/", async (req, res) => {
 
 router.get("/all", async (req, res) => {
   await getCollection(async (collection) => {
-    const query = { doso: { $exists: false }, dot: { $exists: false } };
+    const query = { status: "Exposed" };
     var arr = [];
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));
