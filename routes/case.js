@@ -79,19 +79,32 @@ router.post("/", async (req, res) => {
       return (await collection.find(filter).count()) === 1;
     })
     .map(async (item) => {
+      let filter = {
+        name: item.name,
+      };
+      filter[item.type.toLowerCase()] = item.info;
+      var response = await collection.findOne(filter);
+
       let entry = {
         name: item.name,
         doc: new Date(item.doc),
         status: "Exposed",
         form: true,
       };
-
-      entry[item.type.toLowerCase()] = item.info;
-      const response = await collection.insertOne(entry);
-      query.contacts.push({ _id: response.ops[0]["_id"] });
-      return new Promise((res, rej) => {
-        res(response);
-      });
+      if (response) {
+        query.contacts.push({ _id: response._id });
+        response = collection.updateOne({ _id: response._id }, { $set: entry });
+        return new Promise((res, rej) => {
+          res(response);
+        });
+      } else {
+        entry[item.type.toLowerCase()] = item.info;
+        response = await collection.insertOne(entry);
+        query.contacts.push({ _id: response.ops[0]["_id"] });
+        return new Promise((res, rej) => {
+          res(response);
+        });
+      }
     });
   Promise.all(promises)
     .then(async (result) => {
@@ -105,12 +118,32 @@ router.post("/", async (req, res) => {
       if (dob) {
         query.dob = new Date(dob);
       } //This is wrong.
-      const response2 = await collection.insertOne(query);
-      if (response2) {
-        res.send({ _id: response2.ops[0]["_id"] });
-        // resolve("worked properly");
+      console.log(query);
+      var response = await collection.findOne({
+        name: query.name,
+        $or: [{ email: query.email }, { phone: query.phone }],
+      });
+
+      if (response) {
+        console.log(response);
+        let id = response._id;
+        response = await collection.updateOne(
+          { _id: response._id },
+          { $set: query }
+        );
+        if (response) {
+          res.send({ _id: id });
+        } else {
+          res.send({ err: "Ooof" });
+        }
       } else {
-        res.send({ err: "Ooof" });
+        const response2 = await collection.insertOne(query);
+        if (response2) {
+          res.send({ _id: response2.ops[0]["_id"] });
+          // resolve("worked properly");
+        } else {
+          res.send({ err: "Ooof" });
+        }
       }
     })
     .then((res) => client.close());

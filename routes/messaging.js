@@ -134,7 +134,7 @@ router.post("/case", function (req, res, next) {
     if (response.modifiedCount !== 1) {
       const entry = { ...filter, status: "Positive" };
       entry[req.body.dType] = new Date(req.body.date);
-      const response = await collection.insertOne(entry);
+      response = await collection.insertOne(entry);
     }
 
     if (req.body.type === "phone") {
@@ -176,7 +176,7 @@ router.post("/case", function (req, res, next) {
 router.post("/case/all", (req, res, next) => {
   res.send("Twilio Send Case All");
 });
-//JUST MIGHT USE
+//JUST MIGHT
 router.post("/contact/all", function (res, end, next) {
   res.send("Twilio Send Contact All");
 });
