@@ -172,11 +172,11 @@ router.post("/case", function (req, res, next) {
     }
   });
 });
-
+//MOST LIKELY WONT USE
 router.post("/case/all", (req, res, next) => {
   res.send("Twilio Send Case All");
 });
-
+//JUST MIGHT USE
 router.post("/contact/all", function (res, end, next) {
   res.send("Twilio Send Contact All");
 });
