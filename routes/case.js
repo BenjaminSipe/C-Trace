@@ -72,17 +72,18 @@ router.post("/", async (req, res) => {
       let filter = {
         name: item.name,
         status: "Recovered",
-        immunityEnd: { $gte: {} },
+        immunityEnd: { $gte: new Date() },
       };
       filter[item.type.toLowerCase()] = item.info;
-      filter.immunityEnd["$gte"] = new Date();
-      return await collection.find(filter);
+      // filter.immunityEnd["$gte"] = new Date();
+      return (await collection.find(filter).count()) === 1;
     })
     .map(async (item) => {
       let entry = {
         name: item.name,
         doc: new Date(item.doc),
         status: "Exposed",
+        form: true,
       };
 
       entry[item.type.toLowerCase()] = item.info;
@@ -103,7 +104,7 @@ router.post("/", async (req, res) => {
       }
       if (dob) {
         query.dob = new Date(dob);
-      }
+      } //This is wrong.
       const response2 = await collection.insertOne(query);
       if (response2) {
         res.send({ _id: response2.ops[0]["_id"] });
