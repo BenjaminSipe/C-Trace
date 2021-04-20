@@ -8,7 +8,7 @@ router.get("/recovered/all", (req, res) => {
     let x = new Date();
     x.setDate(x.getDate() - 14);
     const query = {
-      $or: [{ doso: { $lte: x } }, { dot: { $lte: x } }],
+      status: "Recovered",
     };
     let arr = [];
     const cursor = await collection.find(query);
@@ -21,7 +21,7 @@ router.get("/by/name/:name", (req, res) => {
     if (req.params.name) {
       const query = {
         name: req.params.name,
-        $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+        status: "Positive",
       };
       const person = await collection.findOne(query);
       if (person) {
@@ -43,7 +43,7 @@ router.get("/:id", async (req, res, next) => {
       await getCollection(async (collection) => {
         query = {
           _id: ObjectID(req.params.id),
-          $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+          status: "Positive",
         };
         const person = await collection.findOne(query);
         if (person) {
@@ -66,10 +66,10 @@ router.post("/", async (req, res) => {
   const collection = (await client.connect())
     .db(dbName)
     .collection(collectionName);
-  var query = { ...req.body };
+  var query = { ...req.body, status: "Positive" };
   query.contacts = [];
   var promises = req.body.contacts.map(async (item) => {
-    let entry = { name: item.name, doc: new Date(item.doc) };
+    let entry = { name: item.name, doc: new Date(item.doc), status: "Exposed" };
     entry[item.type.toLowerCase()] = item.info;
     const response = await collection.insertOne(entry);
     query.contacts.push({ _id: response.ops[0]["_id"] });
@@ -77,7 +77,6 @@ router.post("/", async (req, res) => {
       res(response);
     });
   });
-  console.log(collection);
   Promise.all(promises)
     .then(async (result) => {
       let { dot, doso, dob } = query;
@@ -105,7 +104,7 @@ router.get("/all", async (req, res) => {
   getCollection(async (collection) => {
     var arr = [];
     const query = {
-      $or: [{ doso: { $exists: true } }, { dot: { $exists: true } }],
+      status: "Postive",
     };
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));
