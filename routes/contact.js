@@ -47,19 +47,27 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", async (req, res) => {
   getCollection(async (collection) => {
-    let { doc, dob } = req.body;
-    let query = { ...req.body, status: "Exposed" };
+    // let { doc, dob } = req.body;
+    let { _id, doc, dob, ...query } = { ...req.body, status: "Exposed" };
     if (doc) {
       query.doc = new Date(doc);
     }
     if (dob) {
       query.dob = new Date(dob);
     }
-    var response = await collection.insertOne(query);
-    if (response) {
-      res.send({ _id: response.ops[0]["_id"] });
+    if (_id) {
+      res.status(400).send({ err: "no id provided" });
     } else {
-      res.send({ err: "Ooof" });
+      var response = await collection.updateOne(
+        { _id: ObjectID(_id) },
+        { $set: query }
+      );
+      // console.log(response);
+      if (response) {
+        res.send({ message: "Completed Correctly" });
+      } else {
+        res.send({ err: "Ooof" });
+      }
     }
   });
 });

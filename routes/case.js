@@ -93,7 +93,10 @@ router.post("/", async (req, res) => {
       };
       if (response) {
         query.contacts.push({ _id: response._id });
-        response = collection.updateOne({ _id: response._id }, { $set: entry });
+        response = collection.updateOne(
+          { _id: ObjectID(response._id) },
+          { $set: entry }
+        );
         return new Promise((res, rej) => {
           res(response);
         });
@@ -128,7 +131,7 @@ router.post("/", async (req, res) => {
         console.log(response);
         let id = response._id;
         response = await collection.updateOne(
-          { _id: response._id },
+          { _id: ObjectID(response._id) },
           { $set: query }
         );
         if (response) {
