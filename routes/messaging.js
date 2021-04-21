@@ -69,14 +69,31 @@ async function sendEmail(emailData, res) {
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 }
 
+router.post("/contact/override", function (req, res, next) {
+  console.log("Running Override");
+  getCollection(async (collection) => {
+    const body = {
+      name: req.body.name,
+      doc: new Date(req.body.doc),
+      status: "Exposed",
+    };
+    body[req.body.type.toLowerCase()] = req.body.info;
+    const response = await collection.insertOne(body);
+    req.overrideID = response.ops[0]._id;
+  }).then(() => next());
+});
+
 router.post("/contact/:id", function (req, res, next) {
   if (req.params.id) {
     if (req.params.id == "all") {
       next();
     } else {
+      let id = req.params.id === "override" ? req.overrideID : req.params.id;
+      // console.log(id);
       getCollection(async (collection) => {
-        const query = { _id: ObjectID(req.params.id), status: "Exposed" };
+        const query = { _id: ObjectID(id), status: "Exposed" };
         const person = await collection.findOne(query);
+        // console.log(person);
         if (person) {
           //   if (false) {
           if (person.phone) {
@@ -100,7 +117,7 @@ router.post("/contact/:id", function (req, res, next) {
                   ".\nPlease click this link to fill out our COVID19 form: " +
                   url +
                   "/contact?id=" +
-                  req.params.id +
+                  id +
                   "\nor contact c.trace.contact@gmail.com for more information.",
                 to:
                   "+1" +
@@ -123,7 +140,7 @@ router.post("/contact/:id", function (req, res, next) {
                 to: '"' + person.name + '" <' + person.email + ">",
                 name: person.name,
                 doc: person.doc,
-                id: req.params.id,
+                id: id,
               });
 
               sendEmail(emailData, res);
@@ -134,9 +151,7 @@ router.post("/contact/:id", function (req, res, next) {
             }
           }
         } else {
-          res
-            .status(400)
-            .send({ err: "No Active Contact under ID " + req.params.id });
+          res.status(400).send({ err: "No Active Contact under ID " + id });
         }
       });
     }
