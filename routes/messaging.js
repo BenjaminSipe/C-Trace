@@ -6,7 +6,7 @@ var twilio = require("twilio");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const { request } = require("express");
-const url = "http://172.25.22.175:8080";
+const url = "http://172.25.20.230:8080";
 function contactEmailTemplate(data) {
   return {
     to: data.to, // list of receivers
