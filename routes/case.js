@@ -5,10 +5,9 @@ var getCollection = require("../connectors");
 
 router.get("/recovered/all", (req, res) => {
   getCollection(async (collection) => {
-    let x = new Date();
-    x.setDate(x.getDate() - 14);
     const query = {
       status: "Recovered",
+      deleted: { $exists: false },
     };
     let arr = [];
     const cursor = await collection.find(query);
@@ -22,6 +21,7 @@ router.get("/by/name/:name", (req, res) => {
       const query = {
         name: req.params.name,
         status: "Positive",
+        deleted: { $exists: false },
       };
       const person = await collection.findOne(query);
       if (person) {
@@ -44,6 +44,7 @@ router.get("/:id", async (req, res, next) => {
         query = {
           _id: ObjectID(req.params.id),
           status: "Positive",
+          deleted: { $exists: false },
         };
         const person = await collection.findOne(query);
         if (person) {
@@ -58,98 +59,108 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  const url = "mongodb://127.0.0.1:27017/";
-  const dbName = "test";
-  const collectionName = "Student";
-  let client = new MongoClient(url, { useUnifiedTopology: true });
-  const collection = (await client.connect())
-    .db(dbName)
-    .collection(collectionName);
-  var query = { ...req.body, status: "Positive", contacts: [] };
-  var promises = req.body.contacts
-    .filter(async (item) => {
-      let filter = {
-        name: item.name,
-        status: "Recovered",
-        immunityEnd: { $gte: new Date() },
+router.delete("/:id", async (req, res) => {
+  if (req.params.id) {
+    await getCollection(async (collection) => {
+      query = {
+        _id: ObjectID(req.params.id),
       };
-      filter[item.type.toLowerCase()] = item.info;
-      // filter.immunityEnd["$gte"] = new Date();
-      return (await collection.find(filter).count()) === 1;
-    })
-    .map(async (item) => {
-      let filter = {
-        name: item.name,
-      };
-      filter[item.type.toLowerCase()] = item.info;
-      var response = await collection.findOne(filter);
-
-      let entry = {
-        name: item.name,
-        doc: new Date(item.doc),
-        status: "Exposed",
-        form: true,
-      };
-      if (response) {
-        query.contacts.push({ _id: response._id });
-        response = collection.updateOne(
-          { _id: ObjectID(response._id) },
-          { $set: entry }
-        );
-        return new Promise((res, rej) => {
-          res(response);
-        });
+      const person = await collection.updateOne(query, {
+        $set: { deleted: true },
+      });
+      if (person.modifiedCount === 1) {
+        res.send({ message: "successfully deleted case" });
+      } else if (person.matchedCount > 0 && person.modifiedCount === 0) {
+        res.send({ err: "Patient already marked as deleted" });
       } else {
-        entry[item.type.toLowerCase()] = item.info;
-        response = await collection.insertOne(entry);
-        query.contacts.push({ _id: response.ops[0]["_id"] });
-        return new Promise((res, rej) => {
-          res(response);
-        });
+        res.status(400).send({ err: "Unable to find patient" });
       }
     });
-  Promise.all(promises)
-    .then(async (result) => {
-      let { dot, doso, dob } = query;
-      if (dot) {
-        query.dot = new Date(dot);
-      }
-      if (doso) {
-        query.doso = new Date(doso);
-      }
-      if (dob) {
-        query.dob = new Date(dob);
-      } //This is wrong.
-      console.log(query);
-      var response = await collection.findOne({
-        name: query.name,
-        $or: [{ email: query.email }, { phone: query.phone }],
-      });
+  } else {
+    res.send({ err: "Could not find Parameter ID" });
+  }
+});
 
-      if (response) {
-        console.log(response);
-        let id = response._id;
+router.post("/:id", async (req, res) => {
+  if (req.params.id) {
+    const url = "mongodb://127.0.0.1:27017/";
+    const dbName = "test";
+    const collectionName = "Student";
+    let client = new MongoClient(url, { useUnifiedTopology: true });
+    const collection = (await client.connect())
+      .db(dbName)
+      .collection(collectionName);
+    var query = { ...req.body, status: "Positive", contacts: [] };
+    var promises = req.body.contacts
+      .filter(async (item) => {
+        let filter = {
+          name: item.name,
+          status: "Recovered",
+          immunityEnd: { $gte: new Date() },
+        };
+        filter[item.type.toLowerCase()] = item.info;
+        // filter.immunityEnd["$gte"] = new Date();
+        return (await collection.find(filter).count()) === 1;
+      })
+      .map(async (item) => {
+        let filter = {
+          name: item.name,
+        };
+        filter[item.type.toLowerCase()] = item.info;
+        var response = await collection.findOne(filter);
+
+        let entry = {
+          name: item.name,
+          doc: new Date(item.doc),
+          status: "Exposed",
+          form: true,
+        };
+        if (response) {
+          query.contacts.push({ _id: response._id });
+          response = collection.updateOne(
+            { _id: ObjectID(response._id) },
+            { $set: entry }
+          );
+          return new Promise((res, rej) => {
+            res(response);
+          });
+        } else {
+          entry[item.type.toLowerCase()] = item.info;
+          response = await collection.insertOne(entry);
+          query.contacts.push({ _id: response.ops[0]["_id"] });
+          return new Promise((res, rej) => {
+            res(response);
+          });
+        }
+      });
+    Promise.all(promises)
+      .then(async () => {
+        let { dot, doso, dob } = query;
+        if (dot) {
+          query.dot = new Date(dot);
+        }
+        if (doso) {
+          query.doso = new Date(doso);
+        }
+        if (dob) {
+          query.dob = new Date(dob);
+        } //This is wrong.
+        console.log(query);
+
         response = await collection.updateOne(
-          { _id: ObjectID(response._id) },
+          { _id: ObjectID(req.params.id) },
           { $set: query }
         );
         if (response) {
-          res.send({ _id: id });
+          res.send({ _id: req.params.id });
         } else {
-          res.send({ err: "Ooof" });
+          res.send({ err: "Something messed up." });
         }
-      } else {
-        const response2 = await collection.insertOne(query);
-        if (response2) {
-          res.send({ _id: response2.ops[0]["_id"] });
-          // resolve("worked properly");
-        } else {
-          res.send({ err: "Ooof" });
-        }
-      }
-    })
-    .then((res) => client.close());
+      })
+      .then(() => client.close());
+  } else {
+    res.status(400).send({ err: "No id in params" });
+  }
 });
 
 router.get("/all", async (req, res) => {
@@ -157,6 +168,7 @@ router.get("/all", async (req, res) => {
     var arr = [];
     const query = {
       status: "Positive",
+      deleted: { $exists: false },
     };
     const cursor = await collection.find(query);
     await cursor.forEach((elem) => arr.push(elem));
