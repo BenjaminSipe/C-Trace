@@ -253,16 +253,23 @@ router.post("/contact/:id", function (req, res, next) {
 
 router.post("/case", function (req, res, next) {
   getCollection(async (collection) => {
-    const filter = { name: req.body.name };
-    filter[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
-    const query = { $set: { status: "Positive" } };
-    var response = await collection.findOne(filter);
+    const query = { name: req.body.name };
+    console.log(query);
+    query[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
+    const upd = { $set: { status: "Positive" } };
+    var response = await collection.findOne({
+      ...query,
+      deleted: { $exists: false },
+    });
+
     var id;
+    var filter = query;
     if (response) {
       id = response._id;
+      console.log(id);
       const x = await collection.updateOne(
         { _id: ObjectID(response._id) },
-        query
+        upd
       );
       // console.log(x); //
     } else {
