@@ -6,7 +6,41 @@ var twilio = require("twilio");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const { request } = require("express");
-const url = "http://172.25.20.230:8080";
+const url = (type, code, id) =>
+  "http://172.25.23.75:8080/" + type + "?id=" + id + "&code=" + code;
+const code = (data) => {
+  // if (type === "case") {
+  return (
+    (data.email ? 1 : 0) +
+    (data.phone ? 2 : 0) +
+    (data.address ? 4 : 0) +
+    (data.dob ? 8 : 0)
+  );
+  // } else if (type === "contact") {
+
+  // }
+  // let c = [ 100
+  //   // "name",
+  //   "email",
+  //   "phone",
+  //   "address",
+  //   // "quarantine location",
+  //   "dob",
+  //   // "dot",
+  //   // "doso",
+  // ];
+  // let contact = [
+  //   //"name",
+  //   "address",
+  //   //"quarantinelocation",
+  //   "email",
+  //   "dob",
+  //   //"doc",
+  //   "phone",
+  // ];
+
+  // return;
+};
 function contactEmailTemplate(data) {
   return {
     to: data.to, // list of receivers
@@ -20,9 +54,7 @@ function contactEmailTemplate(data) {
       data.doc +
       ".\n" +
       "Please follow this link to fill out a Covid Contact Form:" +
-      url +
-      "/contact?id=" +
-      data.id +
+      url("contact", data.code, data.id) +
       "\nIf you believe this email was sent in error, " +
       "please contact your local health authority for verification." +
       "\n-your local health authority,\n" +
@@ -54,9 +86,7 @@ function caseEmailTemplate(data) {
       "tested positive for COVID19 or are developing symptoms " +
       "after a known COVID19 exposure.\n" +
       "Please follow this link to fill out a Covid Postivite Case Form:" +
-      url +
-      "/case?id=" +
-      data.id +
+      url("case", data.code, data.id) +
       "\nIf you believe this email was sent in error, " +
       "please contact your local health authority for verification." +
       "\n-your local health authority,\n" +
@@ -180,12 +210,15 @@ router.post("/contact/:id", function (req, res, next) {
       next();
     } else {
       let id = req.params.id === "override" ? req.overrideID : req.params.id;
-      // console.log(id);
       getCollection(async (collection) => {
         const query = { _id: ObjectID(id), status: "Exposed" };
-        const person = await collection.findOne(query);
-        // console.log(person);
-        if (person) {
+        var person = await collection.findOneAndUpdate(
+          query,
+          // { ...query, deleted: { $exists: false } },
+          { $unset: { form: "" } }
+        );
+        if (person.value) {
+          person = person.value;
           //   if (false) {
           if (person.phone) {
             let rawdata = fs.readFileSync("./tokens.json");
@@ -206,9 +239,7 @@ router.post("/contact/:id", function (req, res, next) {
                     day: "numeric",
                   }) +
                   ".\nPlease click this link to fill out our COVID19 form: " +
-                  url +
-                  "/contact?id=" +
-                  id +
+                  url("contact", code(person), id) +
                   "\nor contact c.trace.contact@gmail.com for more information.",
                 to:
                   "+1" +
@@ -232,6 +263,7 @@ router.post("/contact/:id", function (req, res, next) {
                 name: person.name,
                 doc: person.doc,
                 id: id,
+                code: code(person),
               });
 
               sendEmail(emailData, res);
@@ -251,68 +283,68 @@ router.post("/contact/:id", function (req, res, next) {
   }
 });
 
-router.post("/case", function (req, res, next) {
+router.post("/case", function (req, res) {
   getCollection(async (collection) => {
-    const query = { name: req.body.name };
-    console.log(query);
-    query[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
-    const upd = { $set: { status: "Positive" } };
-    var response = await collection.findOne({
-      ...query,
-      deleted: { $exists: false },
-    });
-
-    var id;
-    var filter = query;
-    if (response) {
-      id = response._id;
-      console.log(id);
-      const x = await collection.updateOne(
-        { _id: ObjectID(response._id) },
-        upd
-      );
-      // console.log(x); //
+    var query;
+    if (req.body._id) {
+      query = { _id: ObjectID(req.body._id) };
     } else {
-      const entry = { ...filter, status: "Positive" };
-      entry[req.body.dType] = new Date(req.body.date);
-      response = await collection.insertOne(entry);
-      id = response.ops[0]._id;
+      query = { name: req.body.name };
+      query[req.body.type.toLowerCase()] = req.body.info.toLowerCase();
     }
-    if (req.body.type === "Phone") {
+    var response = await collection.findOneAndUpdate(
+      { ...query, deleted: { $exists: false } },
+      { $set: { status: "Positive" } }
+    );
+
+    console.log(response);
+    var data;
+    if (response.value) {
+      console.log(response.value);
+      data = response.value;
+    } else {
+      if (req.body._id) {
+        res.status(400).send({ err: "No contact found under ID" });
+        return;
+      } else {
+        data = { ...query, status: "Positive" };
+        data[req.body.dType] = new Date(req.body.date);
+        var z = await collection.insertOne(data);
+        data.id = z.ops[0]._id;
+      }
+    }
+    if (data.phone) {
       let rawdata = fs.readFileSync("./tokens.json");
       let { accountSid, authToken } = JSON.parse(rawdata);
       console.log(accountSid);
-      let t =
-        req.body.dType === "doso"
-          ? "you developed covid symptoms starting on " +
-            new Date(req.body.date).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }) +
-            ". "
-          : "your COVID19 test taken on " +
-            new Date(req.body.date).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }) +
-            " came back positive. ";
+      let t = data.doso
+        ? "you developed covid symptoms starting on " +
+          new Date(data.doso).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }) +
+          ". "
+        : "your COVID19 test taken on " +
+          new Date(data.dot).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }) +
+          " came back positive. ";
       var client = new twilio(accountSid, authToken);
       client.messages
         .create({
           body:
-            req.body.name +
+            data.name +
             ": according to our records, " +
             t +
             "Please follow this link to fill out our COVID form " +
-            url +
-            "/case?id=" +
-            id +
+            url("case", code(data), data._id) +
             " and begin the quarantine process.",
           to:
             "+1" +
-            req.body.info
+            data.phone
               .split("")
               .filter((letter) => "1234567890".split("").includes(letter))
               .join(""), // Text this number
@@ -326,18 +358,18 @@ router.post("/case", function (req, res, next) {
         );
       // Do Twilio Code
     } else {
-      if (req.body.type === "Email") {
+      if (data.email) {
         let emailData = caseEmailTemplate({
-          to: '"' + req.body.name + '" <' + req.body.info + ">",
-          name: req.body.name,
-          id: id,
+          to: '"' + data.name + '" <' + data.email + ">",
+          name: data.name,
+          id: data._id,
+
+          code: code(data),
         });
 
         sendEmail(emailData, res);
       } else {
-        res
-          .status(400)
-          .send({ err: "No Contact Info found for " + req.body.name });
+        res.status(400).send({ err: "No Contact Info found for " + data.name });
       }
     }
   });

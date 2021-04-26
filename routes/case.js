@@ -136,15 +136,21 @@ router.post("/:id", async (req, res) => {
     Promise.all(promises)
       .then(async () => {
         let { dot, doso, dob } = query;
-        if (dot) {
-          query.dot = new Date(dot);
-        }
+        let releaseDate;
+
         if (doso) {
+          releaseDate = new Date(doso);
+
           query.doso = new Date(doso);
+        }
+        if (dot) {
+          releaseDate = new Date(dot);
+          query.dot = new Date(dot);
         }
         if (dob) {
           query.dob = new Date(dob);
         } //This is wrong.
+        releaseDate.setTime(releaseDate.getTime() + 14);
         console.log(query);
 
         response = await collection.updateOne(
@@ -152,7 +158,7 @@ router.post("/:id", async (req, res) => {
           { $set: query }
         );
         if (response) {
-          res.send({ _id: req.params.id });
+          res.send({ _id: req.params.id, releaseDate: releaseDate });
         } else {
           res.send({ err: "Something messed up." });
         }
