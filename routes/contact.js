@@ -96,13 +96,15 @@ router.post("/:id", async (req, res) => {
       console.log(req.params.id);
       res.status(400).send({ err: "no id provided" });
     } else {
-      var response = await collection.updateOne(
+      var response = await collection.findOneAndUpdate(
         { _id: ObjectID(req.params.id) },
         { $set: query }
       );
       // console.log(response);
-      if (response) {
-        res.send({ message: "Completed Correctly" });
+      if (response.value) {
+        var d = new Date(response.value.doc);
+        d.setDate(d.getDate() + 14);
+        res.send({ message: "Completed Correctly", releaseDate: d });
       } else {
         res.send({ err: "Ooof" });
       }

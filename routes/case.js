@@ -1,3 +1,4 @@
+const { response } = require("express");
 var express = require("express");
 var router = express.Router();
 const { ObjectID, MongoClient } = require("mongodb");
@@ -139,25 +140,29 @@ router.post("/:id", async (req, res) => {
         let releaseDate;
 
         if (doso) {
-          releaseDate = new Date(doso);
+          // releaseDate = new Date(doso);
 
           query.doso = new Date(doso);
         }
         if (dot) {
-          releaseDate = new Date(dot);
+          // releaseDate = new Date(dot);
           query.dot = new Date(dot);
         }
         if (dob) {
           query.dob = new Date(dob);
         } //This is wrong.
-        releaseDate.setTime(releaseDate.getTime() + 14);
+        // releaseDate.setTime(releaseDate.getTime() + 14);
         console.log(query);
 
-        response = await collection.updateOne(
+        response = await collection.findOneandUpdate(
           { _id: ObjectID(req.params.id) },
           { $set: query }
         );
-        if (response) {
+        if (response.value) {
+          var d = new Date(
+            response.value.dot ? response.value.dot : response.value.doso
+          );
+          d.setDate(d.getDate() + 14);
           res.send({ _id: req.params.id, releaseDate: releaseDate });
         } else {
           res.send({ err: "Something messed up." });

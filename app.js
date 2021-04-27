@@ -7,6 +7,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger.json");
 const cors = require("cors");
 var twilio = require("twilio");
+var helmet = require("helmet");
 
 var messagingRouter = require("./routes/messaging");
 var authRouter = require("./routes/auth");
@@ -59,5 +60,7 @@ app.use(function (err, req, res, next) {
     error: err,
   });
 });
+
+app.use(helmet());
 
 module.exports = app;
