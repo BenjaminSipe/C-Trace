@@ -154,7 +154,7 @@ router.post("/:id", async (req, res) => {
         // releaseDate.setTime(releaseDate.getTime() + 14);
         console.log(query);
 
-        response = await collection.findOneandUpdate(
+        response = await collection.findOneAndUpdate(
           { _id: ObjectID(req.params.id) },
           { $set: query }
         );
