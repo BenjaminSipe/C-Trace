@@ -7,7 +7,12 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const { request } = require("express");
 const url = (type, code, id) =>
-  "http://172.25.23.75:8080/" + type + "?id=" + id + "&code=" + code;
+  "http://ec2-54-148-105-169.us-west-2.compute.amazonaws.com/" +
+  type +
+  "?id=" +
+  id +
+  "&code=" +
+  code;
 const code = (data) => {
   // if (type === "case") {
   return (
@@ -16,30 +21,6 @@ const code = (data) => {
     (data.address ? 4 : 0) +
     (data.dob ? 8 : 0)
   );
-  // } else if (type === "contact") {
-
-  // }
-  // let c = [ 100
-  //   // "name",
-  //   "email",
-  //   "phone",
-  //   "address",
-  //   // "quarantine location",
-  //   "dob",
-  //   // "dot",
-  //   // "doso",
-  // ];
-  // let contact = [
-  //   //"name",
-  //   "address",
-  //   //"quarantinelocation",
-  //   "email",
-  //   "dob",
-  //   //"doc",
-  //   "phone",
-  // ];
-
-  // return;
 };
 function contactEmailTemplate(data) {
   return {

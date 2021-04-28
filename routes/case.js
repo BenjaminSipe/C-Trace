@@ -154,16 +154,15 @@ router.post("/:id", async (req, res) => {
         // releaseDate.setTime(releaseDate.getTime() + 14);
         console.log(query);
 
-        response = await collection.findOneAndUpdate(
+        var test = await collection.findOneAndUpdate(
           { _id: ObjectID(req.params.id) },
           { $set: query }
         );
-        if (response.value) {
-          var d = new Date(
-            response.value.dot ? response.value.dot : response.value.doso
-          );
+        if (test.value) {
+          var d = new Date(query.dot ? query.dot : query.doso);
           d.setDate(d.getDate() + 14);
-          res.send({ _id: req.params.id, releaseDate: releaseDate });
+          // console.log();
+          res.send({ _id: req.params.id, releaseDate: d });
         } else {
           res.send({ err: "Something messed up." });
         }
