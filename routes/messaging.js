@@ -7,7 +7,9 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const { request } = require("express");
 const url = (type, code, id) =>
-  "http://ec2-54-148-105-169.us-west-2.compute.amazonaws.com/" +
+  // "http://ec2-54-148-105-169.us-west-2.compute.amazonaws.com/" +
+  "http://54.148.105.169/" +
+  // "http://localhost:8081/" +
   type +
   "?id=" +
   id +
@@ -84,16 +86,38 @@ async function sendEmail(emailData, res) {
     },
   });
   // send mail with defined transport object
-  let info = await transporter.sendMail({
-    ...emailData,
-    from: '"College of the Ozarks" <c.trace.contact@gmail.com>',
-  });
+  transporter
+    .sendMail({
+      ...emailData,
+      from: '"College of the Ozarks" <c.trace.contact@gmail.com>',
+    })
+    .then((result) => {
+      if (result.accepted.length > 0) {
+        // console.log(result);
+        res.send({
+          messageID: result.messageId,
+          to: emailData.to,
+          message: "Message sent",
+        });
+        return Promise.resolve();
+      } else {
+        res.status(500).send({
+          err: "unable to send message",
+          rej: resolve,
+          data: emailData,
+        });
+        return Promise.reject();
+      }
+    })
+    .catch((resolve) => {
+      console.log(resolve);
+    });
 
-  res.send({
-    messageID: info.messageId,
-    to: emailData.to,
-    message: "Message sent",
-  });
+  // res.send({
+  //   messageID: info.messageId,
+  //   to: emailData.to,
+  //   message: "Message sent",
+  // });
 }
 
 router.put("/release/:id", (req, res) => {
